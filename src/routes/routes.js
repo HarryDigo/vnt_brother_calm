@@ -238,7 +238,7 @@ router.get('/publicacoes/de/:usuario_id', async (req, res) => {
       imagem: post.User.imagem,
       qtd_likes: post.qtd_likes,
       qtd_comentarios: post.Comments.length,
-      criado_em: post.createdAt
+      criado_em: post.criado_em
     }
   });
 
