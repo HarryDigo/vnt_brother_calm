@@ -397,7 +397,7 @@ router.get('/comentarios', async (req, res) => {
 
   res.status(200).json({
     data,
-    count: comments.length
+    total: comments.length
   })
 })
 
