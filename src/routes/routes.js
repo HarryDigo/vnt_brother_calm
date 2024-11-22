@@ -8,8 +8,6 @@ const router = express.Router();
 router.post('/usuarios', async (req, res) => {
   const { nome, email, nick, senha, nascimento } = req.body;
 
-  console.log(req.body);
-
   if (!nome || !email || !nick || !senha || !nascimento) {
     return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }

@@ -17,6 +17,9 @@ const sequelize = new Sequelize(
             },
         },
         logging: false,
+        define: {
+            timestamps: false
+        }
     }
 );
 
@@ -33,8 +36,6 @@ const Usuarios = sequelize.define("Usuarios", {
     senha: {type: DataTypes.STRING, allowNull: false},
     nascimento: {type: DataTypes.DATE, allowNull: false},
     imagem: {type: DataTypes.STRING, allowNull: false},
-},{
-    timestamps: false
 });
 
 const Publicacoes = sequelize.define("Publicacoes", {
@@ -48,8 +49,6 @@ const Publicacoes = sequelize.define("Publicacoes", {
     usuario_id: {type: DataTypes.UUID, allowNull: false},
     qtd_likes: {type: DataTypes.NUMBER, defaultValue: 0, allowNull: false},
     criado_em: {type: DataTypes.DATE, allowNull: false},
-},{
-    timestamps: false
 });
 
 const Comentarios = sequelize.define("Comentarios", {
@@ -64,8 +63,6 @@ const Comentarios = sequelize.define("Comentarios", {
     qtd_likes: {type: DataTypes.NUMBER, defaultValue: 0, allowNull: false},
     comentario: {type: DataTypes.STRING, allowNull: false},
     // criado_em: {type: DataTypes.DATE, allowNull: false},
-},{
-    timestamps: false
 });
 
 const Seguidores = sequelize.define("Seguidores", {
@@ -77,8 +74,6 @@ const Seguidores = sequelize.define("Seguidores", {
     },
     usuario_id: {type: DataTypes.UUID, allowNull: false},
     seguidor_id: {type: DataTypes.UUID, allowNull: false},
-},{
-    timestamps: false
 });
 
 Publicacoes.belongsTo(Usuarios, { foreignKey: 'usuario_id', as: 'User' });
