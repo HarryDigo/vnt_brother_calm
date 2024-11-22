@@ -11,26 +11,26 @@ router.post('/usuarios', async (req, res) => {
   console.log(req.body);
 
   if (!nome || !email || !nick || !senha || !nascimento) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }
 
   const currentYear = new Date().getFullYear();
   const userYear = new Date(nascimento).getFullYear();                       
                                                                           
   if (currentYear - 16 < userYear) {                                   
-    return res.status(400).json({ error: 'A idade deve ser maior que 16 anos' }); 
+    return res.status(400).json({ erro: 'A idade deve ser maior que 16 anos' }); 
   }
 
   const emailCheck = await Usuarios.findOne({ where: { nick: { [Op.eq]: email } } });
 
-  if (emailCheck !== null) {
-    return res.status(400).json({ error: 'Email já está em uso' });
+  if (emailCheck) {
+    return res.status(400).json({ erro: 'Email já está em uso' });
   }
 
   const nickCheck = await Usuarios.findOne({ where: { nick: { [Op.eq]: nick } } });
 
-  if (nickCheck !== null) {
-    return res.status(400).json({ error: 'Nick já está em uso' });
+  if (nickCheck) {
+    return res.status(400).json({ erro: 'Nick já está em uso' });
   }
   
   const senhaCriptografada = await bcrypt.hash(senha, 10);
@@ -94,8 +94,8 @@ router.get('/usuarios/:usuario_id', async (req, res) => {
 
   const user = await Usuarios.findByPk(usuario_id);
 
-  if (user === null) {
-    return res.status(404).json({ error: 'Usuário não encontrado' })
+  if (!user) {
+    return res.status(404).json({ erro: 'Usuário não encontrado' })
   }
 
   return res.status(200).json({
@@ -111,31 +111,31 @@ router.patch('/usuarios/:usuario_id', async (req, res) => {
   const { nome, email, nick } = req.body;
   const usuario_id = req.params.usuario_id;
 
-  if (nome === null && email === null && nick === null) {
-    return res.status(400).json({ error: 'Pelo menos um campo deve ser fornecido para atualização' });
+  if (!nome && !email && !nick) {
+    return res.status(400).json({ erro: 'Pelo menos um campo deve ser fornecido para atualização' });
   }
 
   const emailCheck = await Usuarios.findOne({ where: { email: { [Op.eq]: email } } });
 
-  if (emailCheck !== null) {
-    return res.status(400).json({ error: 'Email já está em uso' });
+  if (emailCheck) {
+    return res.status(400).json({ erro: 'Email já está em uso' });
   }
 
   const nickCheck = await Usuarios.findOne({ where: { nick: { [Op.eq]: nick } } });
 
-  if (nickCheck !== null) {
-    return res.status(400).json({ error: 'Nick já está em uso' });
+  if (nickCheck) {
+    return res.status(400).json({ erro: 'Nick já está em uso' });
   }
 
   const user = await Usuarios.findByPk(usuario_id);
 
-  if (user === null) {
-    return res.status(404).json({ error: 'Usuário não encontrado' });
+  if (!user) {
+    return res.status(404).json({ erro: 'Usuário não encontrado' });
   }
 
-  if (nome !== '') user.nome = nome;
-  if (email !== '') user.email = email;
-  if (nick !== '') user.nick = nick;
+  if (nome) user.nome = nome;
+  if (email) user.email = email;
+  if (nick) user.nick = nick;
 
   await user.save();
 
@@ -151,14 +151,14 @@ router.patch('/usuarios/:usuario_id', async (req, res) => {
 router.post('/publicacoes', async (req, res) => { //
   const { publicacao, usuario_id } = req.body;
 
-  if (publicacao === null || usuario_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  if (!publicacao || !usuario_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }
 
   const usuario = await Usuarios.findByPk(usuario_id);
 
-  if (usuario === null){
-    return res.status(400).json({ error: 'Usuário não encontrado' });
+  if (!usuario){
+    return res.status(400).json({ erro: 'Usuário não encontrado' });
   }
 
   const newPub = await Publicacoes.create({
@@ -202,14 +202,14 @@ router.get('/publicacoes', async (req, res) => {
 router.get('/publicacoes/de/:usuario_id', async (req, res) => {
   const usuario_id = req.params.usuario_id;
 
-  if (usuario_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' })
+  if (!usuario_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' })
   }
 
   const user = await Usuarios.findByPk(usuario_id);
   
-  if (user === null) {
-    return res.status(404).json({ error: 'Usuário não encontrado' })
+  if (!user) {
+    return res.status(404).json({ erro: 'Usuário não encontrado' })
   }
 
   const posts = await Publicacoes.findAll({
@@ -255,8 +255,8 @@ router.get('/publicacoes/de/:usuario_id', async (req, res) => {
 router.get('/publicacoes/:publicacao_id', async (req, res) => {
   const publicacao_id = req.params.publicacao_id;
 
-  if (publicacao_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  if (!publicacao_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }
 
   const post = await Publicacoes.findByPk(publicacao_id, {
@@ -267,8 +267,8 @@ router.get('/publicacoes/:publicacao_id', async (req, res) => {
     }]
   });
 
-  if (post === null) {
-    return res.status(404).json({ error: 'Publicação não encontrada' });
+  if (!post) {
+    return res.status(404).json({ erro: 'Publicação não encontrada' });
   }
 
   const comments = await Comentarios.findAll({ 
@@ -313,18 +313,18 @@ router.delete('/publicacoes', async (req, res) => {
 
   const post = await Publicacoes.findByPk(publicacao_id);
 
-  if (post === null) {
-    return res.status(404).json({ error: 'Publicação não encontrada' });
+  if (!post) {
+    return res.status(404).json({ erro: 'Publicação não encontrada' });
   }
 
   const user = await Usuarios.findByPk(usuario_id);
 
-  if (user === null) {
-    return res.status(400).json({ error: 'Usuário não informado' });
+  if (!user) {
+    return res.status(400).json({ erro: 'Usuário não informado' });
   }
 
   if (post.usuario_id !== usuario_id) {
-    return res.status(403).json({ error: 'Usuário não autorizado' })
+    return res.status(403).json({ erro: 'Usuário não autorizado' })
   }
 
   post.destroy();
@@ -335,20 +335,20 @@ router.delete('/publicacoes', async (req, res) => {
 router.post('/comentarios', async (req, res) => {
   const { publicacao_id, usuario_id, comentario } = req.body;
 
-  if (publicacao_id === null || usuario_id === null || comentario === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  if (!publicacao_id || !usuario_id || !comentario) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }
 
   const user = await Usuarios.findByPk(usuario_id);
 
-  if (user === null) {
-    return res.status(400).json({ error: 'Usuário não encontrado' });
+  if (!user) {
+    return res.status(400).json({ erro: 'Usuário não encontrado' });
   }
 
   const post = await Publicacoes.findByPk(publicacao_id);
 
-  if (post === null) {
-    return res.status(400).json({ error: 'Publicação não encontrada' })
+  if (!post) {
+    return res.status(400).json({ erro: 'Publicação não encontrada' })
   }
 
   const newCom = await Comentarios.create({
@@ -363,14 +363,14 @@ router.post('/comentarios', async (req, res) => {
 router.get('/comentarios', async (req, res) => {
   const publicacao_id = req.query.publicacao_id;
 
-  if (publicacao_id === null) {
-    return res.status(400).json({ error: 'Publicação não informada' });
+  if (!publicacao_id) {
+    return res.status(400).json({ erro: 'Publicação não informada' });
   }
 
   const post = await Publicacoes.findByPk(publicacao_id);
 
-  if (post === null) {
-    return res.status(404).json({ error: 'Publicação não encontrada' });
+  if (!post) {
+    return res.status(404).json({ erro: 'Publicação não encontrada' });
   }
 
   const comments = await Comentarios.findAll({ 
@@ -406,24 +406,24 @@ router.get('/comentarios', async (req, res) => {
 router.delete('/comentarios', async (req, res) => {
   const { comentario_id, usuario_id } = req.body;
 
-  if (comentario_id === null || usuario_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  if (!comentario_id || !usuario_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }
 
   const comment = await Comentarios.findByPk(comentario_id);
 
-  if (comment === null) {
-    return res.status(404).json({ error: 'Comentário não encontrado' });
+  if (!comment) {
+    return res.status(404).json({ erro: 'Comentário não encontrado' });
   }
 
   const user = Usuarios.findByPk(usuario_id);
 
-  if (user === null) {
-    return res.status(404).json({ error: 'Usuário não encontrado' });
+  if (!user) {
+    return res.status(404).json({ erro: 'Usuário não encontrado' });
   }
 
   if (comment.usuario_id !== usuario_id) {
-    return res.status(403).json({ error: 'Usuário não autorizado' });
+    return res.status(403).json({ erro: 'Usuário não autorizado' });
   }
 
   await comment.destroy();
@@ -434,14 +434,14 @@ router.delete('/comentarios', async (req, res) => {
 router.post('/curtidas/publicacao', async (req, res) => {
   const { publicacao_id } = req.body;
 
-  if (publicacao_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' })
+  if (!publicacao_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' })
   }
 
   const post = await Publicacoes.findByPk(publicacao_id);
 
-  if (post === null) {
-    return res.status(400).json({ error: 'Publicação não encontrada' })
+  if (!post) {
+    return res.status(400).json({ erro: 'Publicação não encontrada' })
   }
 
   post.qtd_likes++;
@@ -454,14 +454,14 @@ router.post('/curtidas/publicacao', async (req, res) => {
 router.delete('/curtidas/publicacao', async (req, res) => {
   const { publicacao_id } = req.body;
 
-  if (publicacao_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' })
+  if (!publicacao_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' })
   }
 
   const post = await Publicacoes.findByPk(publicacao_id);
 
-  if (post === null) {
-    return res.status(400).json({ error: 'Publicação não encontrada' })
+  if (!post) {
+    return res.status(400).json({ erro: 'Publicação não encontrada' })
   }
 
   post.qtd_likes--;
@@ -474,14 +474,14 @@ router.delete('/curtidas/publicacao', async (req, res) => {
 router.post('/curtidas/comentario', async (req, res) => {
   const { comentario_id } = req.body;
 
-  if (comentario_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' })
+  if (!comentario_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' })
   }
 
   const comment = await Comentarios.findByPk(comentario_id);
 
-  if (comment === null) {
-    return res.status(400).json({ error: 'Comentário não encontrada' })
+  if (!comment) {
+    return res.status(400).json({ erro: 'Comentário não encontrada' })
   }
 
   comment.qtd_likes++;
@@ -494,14 +494,14 @@ router.post('/curtidas/comentario', async (req, res) => {
 router.delete('/curtidas/comentario', async (req, res) => {
   const { comentario_id } = req.body;
 
-  if (comentario_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' })
+  if (!comentario_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' })
   }
 
   const comment = await Comentarios.findByPk(comentario_id);
 
-  if (comment === null) {
-    return res.status(400).json({ error: 'Comentário não encontrada' })
+  if (!comment) {
+    return res.status(400).json({ erro: 'Comentário não encontrada' })
   }
 
   comment.qtd_likes--;
@@ -514,24 +514,24 @@ router.delete('/curtidas/comentario', async (req, res) => {
 router.post('/seguidores', async (req, res) => {
   const { usuario_id, usuario_a_seguir_id } = req.body;
 
-  if (usuario_id === null || usuario_a_seguir_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  if (!usuario_id || !usuario_a_seguir_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }
 
   const userCheck = await Usuarios.findByPk(usuario_id);
 
-  if (userCheck === null) {
-    return res.status(400).json({ error: 'Usuário não encontrado' });
+  if (!userCheck) {
+    return res.status(400).json({ erro: 'Usuário não encontrado' });
   }
 
   const followCheck = await Usuarios.findByPk(usuario_a_seguir_id);
 
-  if (followCheck === null) {
-    return res.status(400).json({ error: 'Usuário a ser seguido não encontrado' });
+  if (!followCheck) {
+    return res.status(400).json({ erro: 'Usuário a ser seguido não encontrado' });
   }
 
   if (usuario_id === usuario_a_seguir_id) {
-    return res.status(400).json({ error: 'Você não pode seguir a si mesmo' });
+    return res.status(400).json({ erro: 'Você não pode seguir a si mesmo' });
   }
 
   const check = await Seguidores.findOne({
@@ -547,8 +547,8 @@ router.post('/seguidores', async (req, res) => {
     }
   });
 
-  if (check !== null) {
-    return res.status(400).json({ error: 'Você já segue este usuário'});
+  if (check) {
+    return res.status(400).json({ erro: 'Você já segue este usuário'});
   }
 
   const newFollow = await Seguidores.create({
@@ -562,24 +562,24 @@ router.post('/seguidores', async (req, res) => {
 router.delete('/seguidores', async (req, res) => {
   const { usuario_id, usuario_a_seguir_id } = req.body;
 
-  if (usuario_id === null || usuario_a_seguir_id === null) {
-    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  if (!usuario_id || !usuario_a_seguir_id) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
   }
 
   const userCheck = await Usuarios.findByPk(usuario_id);
 
-  if (userCheck === null) {
-    return res.status(400).json({ error: 'Usuário não encontrado' });
+  if (!userCheck) {
+    return res.status(400).json({ erro: 'Usuário não encontrado' });
   }
 
   const followCheck = await Usuarios.findByPk(usuario_a_seguir_id);
 
-  if (followCheck === null) {
-    return res.status(400).json({ error: 'Usuário a ser não seguido não encontrado' });
+  if (!followCheck) {
+    return res.status(400).json({ erro: 'Usuário a ser não seguido não encontrado' });
   }
 
   if (usuario_id === usuario_a_seguir_id) {
-    return res.status(400).json({ error: 'Você não pode interagir com si mesmo' });
+    return res.status(400).json({ erro: 'Você não pode interagir com si mesmo' });
   }
 
   const check = await Seguidores.findOne({
@@ -595,8 +595,8 @@ router.delete('/seguidores', async (req, res) => {
     }
   });
 
-  if (check === null) {
-    return res.status(400).json({ error: 'Você não segue este usuário'});
+  if (!check) {
+    return res.status(400).json({ erro: 'Você não segue este usuário'});
   }
 
   res.json({ seguidor_id: check.seguidor_id });
@@ -613,11 +613,11 @@ router.get('/seguidores/:usuario_id', async (req, res) => {
   const user = await Usuarios.findByPk(usuario_id);
 
   if (user === null) {
-    return res.status(404).json({ error: 'Usuário não encontrado' })
+    return res.status(404).json({ erro: 'Usuário não encontrado' })
   }
 
-  if (page === null || page === undefined || page === '') page = 1;
-  if (limit === null || limit === undefined || limit === '') limit = 10;
+  if (!page) page = 1;
+  if (!limit) limit = 10;
 
   const followers = await Seguidores.findAll({
     where: { 
@@ -658,8 +658,8 @@ router.get('/seguidores/seguindo/:usuario_id', async (req, res) => {
   
   const user = await Usuarios.findByPk(usuario_id);
 
-  if (user === null) {
-    return res.status(404).json({ error: 'Usuário não encontrado' })
+  if (!user) {
+    return res.status(404).json({ erro: 'Usuário não encontrado' })
   }
 
   const followers = await Seguidores.findAll({
