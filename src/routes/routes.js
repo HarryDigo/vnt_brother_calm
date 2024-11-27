@@ -632,7 +632,7 @@ router.get('/seguidores/:usuario_id', async (req, res) => {
 
   const data = followers.map((follower) => {
     return {
-      seguidor_id: follower.id,
+      seguidor_id: follower.seguidor_id,
       nome: follower.Follower.nome,
       nick: follower.Follower.nick,
       imagem: follower.Follower.imagem,
@@ -675,7 +675,7 @@ router.get('/seguidores/seguindo/:usuario_id', async (req, res) => {
 
   const data = followers.map((follower) => {
     return {
-      seguidor_id: follower.id,
+      usuario_id: follower.usuario_id,
       nome: follower.User.nome,
       nick: follower.User.nick,
       imagem: follower.User.imagem,

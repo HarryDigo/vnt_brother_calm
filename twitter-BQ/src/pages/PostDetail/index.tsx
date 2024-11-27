@@ -1,0 +1,3 @@
+export { PostDetail } from "./PostDetail";
+
+
