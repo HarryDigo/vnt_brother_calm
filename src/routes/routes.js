@@ -115,13 +115,13 @@ router.patch('/usuarios/:usuario_id', async (req, res) => {
 
   const emailCheck = await Usuarios.findOne({ where: { email: { [Op.eq]: email } } });
 
-  if (emailCheck) {
+  if (emailCheck && emailCheck.id !== usuario_id) {
     return res.status(400).json({ erro: 'Email já está em uso' });
   }
 
   const nickCheck = await Usuarios.findOne({ where: { nick: { [Op.eq]: nick } } });
 
-  if (nickCheck) {
+  if (nickCheck && nickCheck.id !== usuario_id) {
     return res.status(400).json({ erro: 'Nick já está em uso' });
   }
 
@@ -138,6 +138,7 @@ router.patch('/usuarios/:usuario_id', async (req, res) => {
   await user.save();
 
   return res.status(200).json({
+    id: user.id,
     nome: user.nome,
     email: user.email,
     nick: user.nick,
@@ -632,7 +633,7 @@ router.get('/seguidores/:usuario_id', async (req, res) => {
 
   const data = followers.map((follower) => {
     return {
-      seguidor_id: follower.id,
+      seguidor_id: follower.seguidor_id,
       nome: follower.Follower.nome,
       nick: follower.Follower.nick,
       imagem: follower.Follower.imagem,
@@ -675,7 +676,7 @@ router.get('/seguidores/seguindo/:usuario_id', async (req, res) => {
 
   const data = followers.map((follower) => {
     return {
-      seguidor_id: follower.id,
+      usuario_id: follower.usuario_id,
       nome: follower.User.nome,
       nick: follower.User.nick,
       imagem: follower.User.imagem,
