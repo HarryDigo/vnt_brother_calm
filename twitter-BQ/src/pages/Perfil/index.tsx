@@ -1,3 +1,0 @@
-export { Perfil } from "./Perfil";
-
-
