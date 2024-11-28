@@ -115,13 +115,13 @@ router.patch('/usuarios/:usuario_id', async (req, res) => {
 
   const emailCheck = await Usuarios.findOne({ where: { email: { [Op.eq]: email } } });
 
-  if (emailCheck) {
+  if (emailCheck && emailCheck.id !== usuario_id) {
     return res.status(400).json({ erro: 'Email já está em uso' });
   }
 
   const nickCheck = await Usuarios.findOne({ where: { nick: { [Op.eq]: nick } } });
 
-  if (nickCheck) {
+  if (nickCheck && nickCheck.id !== usuario_id) {
     return res.status(400).json({ erro: 'Nick já está em uso' });
   }
 
@@ -605,50 +605,54 @@ router.delete('/seguidores', async (req, res) => {
 })
 
 router.get('/seguidores/:usuario_id', async (req, res) => {
-  const usuario_id = req.params.usuario_id;
-  let { page, limit } = req.query;
-  
-  const user = await Usuarios.findByPk(usuario_id);
+  try {
+    const usuario_id = req.params.usuario_id;
+    let { page, limit } = req.query;
+    
+    const user = await Usuarios.findByPk(usuario_id);
 
-  if (user === null) {
-    return res.status(404).json({ erro: 'Usuário não encontrado' })
-  }
-
-  if (!page) page = 1;
-  if (!limit) limit = 10;
-
-  const followers = await Seguidores.findAll({
-    where: { 
-      usuario_id: { 
-        [Op.eq]: usuario_id 
-      } 
-    }, 
-    include: [{
-      model: Usuarios,
-      as: 'Follower',
-      attributes: ['nome', 'nick', 'imagem']
-    }]
-  });
-
-  const data = followers.map((follower) => {
-    return {
-      seguidor_id: follower.seguidor_id,
-      nome: follower.Follower.nome,
-      nick: follower.Follower.nick,
-      imagem: follower.Follower.imagem,
+    if (user === null) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' })
     }
-  }) 
 
-  const count = followers.length;
+    if (!page) page = 1;
+    if (!limit) limit = 10;
 
-  const totalPages = Math.floor(count/limit) + 1;
+    const followers = await Seguidores.findAll({
+      where: { 
+        usuario_id: { 
+          [Op.eq]: usuario_id 
+        } 
+      }, 
+      include: [{
+        model: Usuarios,
+        as: 'Follower',
+        attributes: ['nome', 'nick', 'imagem']
+      }]
+    });
 
-  res.status(200).json({
-    data,
-    total: count,
-    currentPage: page,
-    totalPages
-  })
+    const data = followers.map((follower) => {
+      return {
+        seguidor_id: follower.seguidor_id,
+        nome: follower.Follower.nome,
+        nick: follower.Follower.nick,
+        imagem: follower.Follower.imagem,
+      }
+    }) 
+
+    const count = followers.length;
+
+    const totalPages = Math.floor(count/limit) + 1;
+
+    res.status(200).json({
+      data,
+      total: count,
+      currentPage: page,
+      totalPages
+    })
+  } catch (err) {
+    res.status(500).json({ erro: 'erro ao buscar seguidores (provavelmente problema do seguindo)' })
+  }
 })
 
 router.get('/seguidores/seguindo/:usuario_id', async (req, res) => {
