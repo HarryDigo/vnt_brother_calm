@@ -138,6 +138,7 @@ router.patch('/usuarios/:usuario_id', async (req, res) => {
   await user.save();
 
   return res.status(200).json({
+    id: user.id,
     nome: user.nome,
     email: user.email,
     nick: user.nick,
